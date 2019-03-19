@@ -4,7 +4,11 @@ module Train::Platforms::Detect::Helpers
   module Windows
     def detect_windows
       res = @backend.run_command('cmd /c ver')
-      return false if res.exit_status != 0 or res.stdout.empty?
+      if res.exit_status != 0 or res.stdout.empty?
+        # Microsoft OpenSSH server runs within a cmd session already, try only "ver"
+        res = @backend.run_command('ver')
+        return false if res.exit_status != 0 or res.stdout.empty?
+      end
 
       # if the ver contains `Windows`, we know its a Windows system
       version = res.stdout.strip
