@@ -104,4 +104,23 @@ describe 'os_detect_windows' do
       detector.platform[:release].must_equal('4.10.1998')
     end
   end
+
+  describe 'windows 2019 Microsoft OpenSSH' do
+    let(:detector) {
+      detector = OsDetectWindowsTester.new
+      detector.backend.mock_command('cmd /c ver', "\'ver\"\' is not recognized as an internal or external command,\r\noperable program or batch file.", '', 1)
+      detector.backend.mock_command('ver', "\r\nMicrosoft Windows [Version 10.0.17763.437]\r\n", '', 0)
+      detector.backend.mock_command('wmic os get * /format:list',"\r\r\nBuildNumber=17763\r\r\nCaption=Microsoft Windows Server 2019 Standard\r\r\nOSArchitecture=64-bit\r\r\nVersion=10.0.17763\r\r\n" , '', 0)
+      detector.backend.mock_command('wmic cpu get architecture /format:list',"\r\r\nArchitecture=9\r\r\n" , '', 0)
+      detector
+    }
+
+    it 'sets the correct family/release for windows' do
+      detector.detect_windows
+      detector.platform[:family].must_equal('windows')
+      detector.platform[:name].must_equal('Windows Server 2019 Standard')
+      detector.platform[:arch].must_equal('x86_64')
+      detector.platform[:release].must_equal('10.0.17763')
+    end
+  end
 end
